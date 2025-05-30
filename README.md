@@ -1,2 +1,2 @@
 # Mytems-Catalog
-Micro-service based project: User
+Micro-service based project: Catalog
