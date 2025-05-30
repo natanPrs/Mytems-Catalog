@@ -1,6 +1,8 @@
 package com.mtcatalog.services
 
 import com.mtcatalog.dtos.AnnouncedItemDto
+import com.mtcatalog.dtos.PurchaseDto
+import com.mtcatalog.enums.ItemStatus
 import com.mtcatalog.mappers.toEntity
 import com.mtcatalog.models.ItemModel
 import com.mtcatalog.repositories.ItemRepository
@@ -16,5 +18,11 @@ class ItemService(private val itemRepository: ItemRepository) {
             val newAnnouncedItem = announcedItemDto.toEntity()
             itemRepository.save(newAnnouncedItem)
         }
+    }
+
+    fun validateItem(purchaseDto: PurchaseDto): Boolean {
+        return itemRepository.findById(purchaseDto.itemId)
+            .map { it.itemStatus == ItemStatus.ANNOUNCED }
+            .orElse(false)
     }
 }
