@@ -7,6 +7,7 @@ import com.mtcatalog.models.ItemModel
 fun AnnouncedItemDto.toEntity(): ItemModel =
     ItemModel(
         sellerEmail = this.sellerEmail,
+        globalItemId = this.globalItemId,
         title = this.title,
         price = this.amount,
         gameBelong = this.gameBelong,
