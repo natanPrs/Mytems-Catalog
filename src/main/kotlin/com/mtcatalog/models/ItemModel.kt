@@ -18,6 +18,8 @@ data class ItemModel(
     @Id
     val id: UUID = UUID.randomUUID(),
 
+    val globalItemId: UUID,
+
     val sellerEmail : String,
 
     val title: String,
