@@ -1,6 +1,7 @@
 package com.mtcatalog.config
 
 import com.mtcatalog.dtos.AnnouncedItemDto
+import com.mtcatalog.dtos.EventUpdateItemStatusDto
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.springframework.beans.factory.annotation.Value
@@ -11,17 +12,17 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.support.serializer.JsonDeserializer
+import kotlin.jvm.Throws
 
 @Configuration
 @EnableKafka
 class KafkaConsumerConfig(
-    @Value("\${spring.kafka.bootstrap-server}")
+    @Value("\${spring.kafka.bootstrap-servers}")
     private val bootstrapServers: String
 ) {
 
-    @Bean
-    fun consumerFactory(): ConsumerFactory<String, AnnouncedItemDto> {
-        val deserializer = JsonDeserializer(AnnouncedItemDto::class.java)
+    private fun <T> builderConsumerFactory(type: Class<T>): ConsumerFactory<String, T> {
+        val deserializer = JsonDeserializer(type)
         deserializer.setUseTypeMapperForKey(true)
 
         val configs = mapOf(
@@ -34,12 +35,18 @@ class KafkaConsumerConfig(
         return DefaultKafkaConsumerFactory(configs, StringDeserializer(), deserializer)
     }
 
-    @Bean
-    fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, AnnouncedItemDto>{
-        val factory: ConcurrentKafkaListenerContainerFactory<String, AnnouncedItemDto> =
-            ConcurrentKafkaListenerContainerFactory()
-        factory.consumerFactory = consumerFactory()
+    private fun <T> buildKafkaListenerContainerFactory(type: Class<T>): ConcurrentKafkaListenerContainerFactory<String, T>{
+        val factory = ConcurrentKafkaListenerContainerFactory<String, T>()
+            factory.consumerFactory = builderConsumerFactory(type)
 
         return factory
     }
+
+    @Bean
+    fun announceItemKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, AnnouncedItemDto> =
+        buildKafkaListenerContainerFactory(AnnouncedItemDto::class.java)
+
+    @Bean
+    fun purchaseUpdateItemStatus(): ConcurrentKafkaListenerContainerFactory<String, EventUpdateItemStatusDto> =
+        buildKafkaListenerContainerFactory(EventUpdateItemStatusDto::class.java)
 }
